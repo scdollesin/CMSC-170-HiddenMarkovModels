@@ -34,3 +34,21 @@ if (input_file.readable()):
     for i in range(numCases):
         cases.append(input_file.readline().strip().replace(" given ", ""))
     print(cases)
+
+    #determine probabilities for each possible state
+    state_probs = {}
+    for i in range(len(values)):
+        for j in range(len(values)):
+            a = 0
+            b = 0
+            for k in range(len(sequences[0])-1):
+                if(sequences[0][k] == values[j]):
+                    b += 1
+                    if(sequences[0][k+1] == values[i]):
+                        a+=1
+            #print(f"a = {a}, b = {b}")
+            state_probs[values[i]+values[j]] = a/b
+    #determine probability for each possible starting state
+    for i in range(len(values)):
+        state_probs[values[i]+"0"] = 1 if sequences[0][0] == values[i] else 0
+    print(state_probs)
