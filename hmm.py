@@ -1,42 +1,70 @@
 input_file = open("hmm.in", "r")
+sequences = []
+values = []
+measurements = []
+measurement_probs = {}
+state_probs = {}
+cases = []
+case_probs = {}
 
+def getP(s):
+    print(f"s: {s}")
+    if s in state_probs.keys():
+        #print(f"return {s}")
+        return state_probs[s]
+    else:
+        state_probs[s] = 0
+        #print(state_probs.keys())
+        for i in list(state_probs):
+            if i.startswith(s[0]):
+                if not i[-1].isdigit():
+                    state_probs[s] = state_probs[s] + state_probs[i]*getP(i[1]+str(int(s[1])-1))
+                    if(s[0] == values[0]):
+                        state_probs[values[1]+s[1]] = 1 - state_probs[s]
+                        #print(f"{values[1]+s[1]}: {state_probs[values[1]+s[1]]}")
+                    else:
+                        state_probs[values[0]+s[1]] = 1 - state_probs[s]
+                        #print(f"{values[0]+s[1]}: {state_probs[values[0]+s[1]]}")
+                    #print(f"{s}: {state_probs[s]}")
+        return state_probs[s]
+                
+        
 if (input_file.readable()):
     
     #no. of string sequences to be considered
     numString = int(input_file.readline().strip())
     #get the string sequences
-    sequences = []
     for i in range(numString):
         sequences.append(input_file.readline().strip())
-    print(sequences)
+    print(f"sequences: {sequences}")
 
     #determine the values
     values = input_file.readline().strip().split(" ")
-    print(values)
+    print(f"values: {values}")
 
     #determine the measurements
     measurements = input_file.readline().strip().split(" ")
-    print(measurements)
+    print(f"measurements: {measurements}")
 
     #create a dictionary for storing the respective probability of each measurement
-    #example: {'SE': 0.1, 'SF': 0.9, 'TE': 0.6, 'TF': 0.4}
-    measurement_probs = {}
+    #example: {'ES': 0.1, 'FS': 0.9, 'ET': 0.6, 'FT': 0.4}
     for i in range(len(values)):
         probs = input_file.readline().strip().split(" ")
         for j in range(len(measurements)):
-            measurement_probs[values[i]+measurements[j]] = float(probs[j])
-    print(measurement_probs)
+            measurement_probs[measurements[j]+values[i]] = float(probs[j])
+    print(f"measurement_probs: {measurement_probs}")
 
     #determine number of cases to solve
     numCases = int(input_file.readline().strip())
     #extract the cases
-    cases = []
     for i in range(numCases):
-        cases.append(input_file.readline().strip().replace(" given ", ""))
-    print(cases)
+        case = input_file.readline().strip().replace(" given ", "")
+        cases.append(case)
+        case_probs[case] = 0
+    print(f"cases: {cases}")
 
     #determine probabilities for each possible state
-    state_probs = {}
+    #TODO: replace sequences[0] with loop
     for i in range(len(values)):
         for j in range(len(values)):
             a = 0
@@ -46,9 +74,13 @@ if (input_file.readable()):
                     b += 1
                     if(sequences[0][k+1] == values[i]):
                         a+=1
-            #print(f"a = {a}, b = {b}")
+            #print(f"{values[i]+values[j]}: {a}/{b} = {a/b}")
             state_probs[values[i]+values[j]] = a/b
     #determine probability for each possible starting state
     for i in range(len(values)):
         state_probs[values[i]+"0"] = 1 if sequences[0][0] == values[i] else 0
-    print(state_probs)
+    print(f"state_probs: {state_probs}")
+    #measurement_probs[cases[0][2]+cases[0][0]]*
+    case_probs[cases[0]] = getP(cases[0][:2])
+    print(case_probs[cases[0]])
+
