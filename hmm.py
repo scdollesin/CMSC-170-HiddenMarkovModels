@@ -7,7 +7,7 @@ state_probs = {}
 cases = []
 case_probs = {}
 
-def getP(s):
+def getPS(s):
     print(f"s: {s}")
     if s in state_probs.keys():
         #print(f"return {s}")
@@ -18,7 +18,7 @@ def getP(s):
         for i in list(state_probs):
             if i.startswith(s[0]):
                 if not i[-1].isdigit():
-                    state_probs[s] = state_probs[s] + state_probs[i]*getP(i[1]+str(int(s[1])-1))
+                    state_probs[s] = state_probs[s] + state_probs[i]*getPS(i[1]+str(int(s[1])-1))
                     if(s[0] == values[0]):
                         state_probs[values[1]+s[1]] = 1 - state_probs[s]
                         #print(f"{values[1]+s[1]}: {state_probs[values[1]+s[1]]}")
@@ -26,8 +26,17 @@ def getP(s):
                         state_probs[values[0]+s[1]] = 1 - state_probs[s]
                         #print(f"{values[0]+s[1]}: {state_probs[values[0]+s[1]]}")
                     #print(f"{s}: {state_probs[s]}")
+
         return state_probs[s]
                 
+
+def getPM(m):
+    PM = 0
+    for i in list(measurement_probs):
+            if i.startswith(m[0]):
+                PM = PM + measurement_probs[i]*state_probs[i[1]+m[1]]
+                #print(f"+ {measurement_probs[i]}*{state_probs[i[1]+m[1]]}")
+    return PM
         
 if (input_file.readable()):
     
@@ -80,7 +89,8 @@ if (input_file.readable()):
     for i in range(len(values)):
         state_probs[values[i]+"0"] = 1 if sequences[0][0] == values[i] else 0
     print(f"state_probs: {state_probs}")
-    #measurement_probs[cases[0][2]+cases[0][0]]*
-    case_probs[cases[0]] = getP(cases[0][:2])
-    print(case_probs[cases[0]])
+    
+    case_probs[cases[0]] = (measurement_probs[cases[0][2]+cases[0][0]]*getPS(cases[0][:2])) / getPM(cases[0][2:])
+    print(f"({(measurement_probs[cases[0][2]+cases[0][0]])} * {getPS(cases[0][:2])}) / {getPM(cases[0][2:])}")
+    print(f"= {case_probs[cases[0]]}")
 
